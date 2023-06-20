@@ -1,6 +1,6 @@
 {
   "name": "fp-switch-on",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A functional alternative to the switch statement",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,8 +12,19 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "fp",
+    "functional",
+    "function",
+    "switch",
+    "statement",
+    "alternative"
+  ],
   "author": "AweSkyBear",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AweSkyBear/fp-switch-on"
+  },
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
