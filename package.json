@@ -1,6 +1,6 @@
 {
   "name": "fp-switch-on",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A functional alternative to the switch statement",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
