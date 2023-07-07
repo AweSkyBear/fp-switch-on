@@ -13,14 +13,17 @@ Because:
 - it has TypeScript support and checks stuff nicely
 
 ## Features
-- pass `paths` (a case-to-function map) which returns a function (which accepts the `choice`)
+- pass `paths` (a case-to-function map) which returns a function (which accepts the `choice` or `case` to be evaluated)
 - no default case
+- use the return value of the final function if needed
 - sweet TypeScript support
-- 2 methods:
+- API - 2 methods:
   - `switchOn` (alias of `basedOn`)
-    - expects all paths to be satisfied, e.g. all choices to be present in the map, otherwise a TS error occurs
+    - expects all paths to be satisfied, e.g. all choices to be present in the map, otherwise a TS error occurs **and** if we are passing a value dynamically (no static check), the function will error out if the value is not present
   - `switchOnPartial` (alias of `basedOnPartial`)
-    - expects paths to be valid but not exhausted (no error if only *some* of them are present in the map)
+    - expects paths to be valid but not exhaustive (no error if only *some* of them are present in the map) **and** if we execute the final func with a path (`case`) not present in the map, then `undefined` is returned
+
+See the examples below : ) 
 
 
 ## Usage Examples
@@ -47,6 +50,8 @@ switchOn({
 ```
 
 Basic TS example:
+
+**Note:** remember that passing types is all optional.
 
 ```ts
 import { switchOn, switchOnPartial } from 'fp-switch-on'
@@ -119,7 +124,7 @@ const handlePlayerCommand = switchOn<TCommand>({
 // prints `pause command`
 handlePlayerCommand('pause')
 
-// or - if you are not providing all options -
+// or - if you are not providing all options as paths (`switchOnPartial`)
 const handlePlayerCommand2 = switchOnPartial<TCommand>({
   start: () => {
     console.log('start command !')
@@ -136,6 +141,8 @@ handlePlayerCommand2('start')
 Example for using the return value
 
 ```ts
+import { switchOn, switchOnPartial } from 'fp-switch-on'
+
 const convertDigitToName = switchOn<number>({
   1: () => 'one',
   2: () => 'two',
@@ -162,6 +169,118 @@ convertDigitToNameNoError(1)
 convertDigitToNameNoError(100)
 ```
 
+Still wondering what's a good thing about paths mapping to functions (and not a raw value)?
+
+Let's generate the path values dynamically:
+
+```ts
+import { switchOn, switchOnPartial } from 'fp-switch-on'
+
+const digitNames = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+]
+
+// let's generate the path-to-func map dynamically and use that
+const convertDigitToName = switchOnPartial(digitNames.reduce((acc, val, ind) => {
+  acc[ind] = () => val
+
+  // results in a build-up of 
+  // {
+  //   0: () => 'zero',
+  //   1: () => 'one',
+  //   2: () => 'two'
+  // }
+  return acc
+}, {}))
+  
+// returns `five`
+convertDigitToName(5)
+
+// returns `seven`
+convertDigitToName(7)
+
+// returns `three`
+convertDigitToName(3)
+```
+
+Truth is, we can do even a bit more if needed, as the choice is passed to the path function!
+
+Maybe we can decorate / transform / sanitize the final result a bit?
+
+```ts
+import { switchOn, switchOnPartial } from 'fp-switch-on'
+
+const exclamateOnMyChoice = switchOnPartial<number>({
+  3: (choice) => `My choice is ${choice} !!!`,
+  5: (choice) => `My choice is ${choice} !!!`,
+  7: (choice) => `My choice is ${choice} !!!`,
+})
+  
+// returns `My choice is 5 !!!`
+exclamateOnMyChoice(5)
+
+// returns `My choice is 7 !!!`
+exclamateOnMyChoice(7)
+
+/// or cleaner, define a func - why repeat ourselves?
+const exclamateChoice = (choice: number) => console.log(`My choice is ${choice} !!!`)
+
+const exclamateOnMyChoice2 = switchOnPartial<number>({
+  3: exclamateChoice,
+  5: exclamateChoice,
+  7: exclamateChoice,
+})
+
+  
+// returns `My choice is 5 !!!`
+exclamateOnMyChoice2(5)
+
+// returns `My choice is 7 !!!`
+exclamateOnMyChoice2(7)
+```
+
+And we can even pass and *type* more parameters for the final func if needed
+
+```ts
+import { switchOnPartial } from 'fp-switch-on'
+
+type TOptions = {
+  enhance: boolean
+}
+
+/// or cleaner - why repeat ourselves?
+const exclamateChoice = (choice: number, opts?: TOptions) =>
+  console.log(`My choice is ${choice} !!!`, opts.enhance && 'YES IT IS!!!')
+
+const exclamateOnMyChoice2 = switchOnPartial<number, [TOptions]>({
+  3: exclamateChoice,
+  5: exclamateChoice,
+  7: exclamateChoice,
+})
+
+// returns `My choice is 5 !!!`
+exclamateOnMyChoice2(5, { enhance: false })
+
+// returns `My choice is 7 !!! YES IT IS!!!`
+exclamateOnMyChoice2(7, { enhance: true })
+```
+
 ## Install
 
 `npm install fp-switch-on`
+
+## Thank You!
+
+People underestimate the power of saying a simple *Thank You*. It's worth it.
+
+I hope you find this little package useful! Enjoy!
+
