@@ -27,6 +27,27 @@ Because:
 
 Basic example:
 
+```js
+import { switchOn, switchOnPartial } from 'fp-switch-on'
+
+const choice = 1
+
+// prints 1
+switchOn({
+  1: () => {
+    console.log('1')
+  },
+  2: () => {
+    console.log('2')
+  },
+  3: () => {
+    console.log('3')
+  }
+})(choice)
+```
+
+Basic TS example:
+
 ```ts
 import { switchOn, switchOnPartial } from 'fp-switch-on'
 
@@ -57,7 +78,7 @@ switchOnPartial<1 | 2 | 3 | 4 | 5 | 6>({
 
 ```
 
-A more realistic example:
+A more realistic (better looking due to the type) example:
 
 ```ts
 import { switchOn, switchOnPartial } from 'fp-switch-on'
@@ -79,7 +100,7 @@ switchOn<TCommand>({
   },
 })('start')
 
-// or better - make it a function:
+// or better (in some cases) - make it a function:
 const handlePlayerCommand = switchOn<TCommand>({
   start: () => {
     console.log('start command')
@@ -96,7 +117,7 @@ const handlePlayerCommand = switchOn<TCommand>({
 })
 
 // prints `pause command`
-handlePlayerCommand('pause command')
+handlePlayerCommand('pause')
 
 // or - if you are not providing all options -
 const handlePlayerCommand2 = switchOnPartial<TCommand>({
@@ -110,6 +131,35 @@ const handlePlayerCommand2 = switchOnPartial<TCommand>({
 
 // prints `start command !`
 handlePlayerCommand2('start')
+```
+
+Example for using the return value
+
+```ts
+const convertDigitToName = switchOn<number>({
+  1: () => 'one',
+  2: () => 'two',
+  3: () => 'three'
+})
+
+// returns `one`
+convertDigitToName(1)
+
+// errors out - due to the path not satisfied (switchOn)
+convertDigitToName(10)
+
+// non-exhaustive: does not require the path to be satisfied (switchOnPartial)
+const convertDigitToNameNoError = switchOnPartial<number>({
+  1: () => 'one',
+  2: () => 'two',
+  3: () => 'three'
+})
+
+// returns `one`
+convertDigitToNameNoError(1)
+
+// returns `undefined` (no errors)
+convertDigitToNameNoError(100)
 ```
 
 ## Install
